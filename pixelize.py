@@ -16,6 +16,8 @@ def median_cut_quantize(img, img_arr):
     r_average = np.mean(img_arr[:, 0])
     g_average = np.mean(img_arr[:, 1])
     b_average = np.mean(img_arr[:, 2])
+    
+    print(f"RGB values: {r_average}, {g_average}, {b_average}")
 
     for data in img_arr:
         sample_img[data[3]][data[4]] = [r_average, g_average, b_average]
@@ -54,14 +56,14 @@ def split_into_buckets(img, img_arr, depth):
 
 INPUT_PATH = "./input"
 OUTPUT_PATH = "./output"
-input_image_path = os.path.join(INPUT_PATH, "testbarbnobg.png")
-output_dest = os.path.join(OUTPUT_PATH, "testbarbnobg1.png")
-output_shape = (64, 64)
+input_image_path = os.path.join(INPUT_PATH, "foresttest.jpg")
+output_dest = os.path.join(OUTPUT_PATH, "testforest.png")
+output_shape = (128, 96)
 pixelated_image = pixelate(input_image_path, output_shape)
 cv.imwrite(output_dest, pixelated_image)
 sample_img = imread(output_dest)
 output_path = output_dest
-colors = 4 # 2^4
+colors = 7 # 2^colors is the number of colors
 
 flattened_img_array = []
 for rindex, rows in enumerate(sample_img):
