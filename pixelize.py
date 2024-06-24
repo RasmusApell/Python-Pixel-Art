@@ -11,7 +11,7 @@ def pixelate(input_path, output_shape):
     return pixelated_image
 
 
-def median_cut_quantize(img, img_arr):
+def median_cut_quantize(img, img_arr, modify_image=True):
     # when it reaches the end, color quantize
     r_average = np.mean(img_arr[:, 0])
     g_average = np.mean(img_arr[:, 1])
@@ -19,11 +19,13 @@ def median_cut_quantize(img, img_arr):
     
     print(f"RGB values: {r_average}, {g_average}, {b_average}")
 
-    for data in img_arr:
-        sample_img[data[3]][data[4]] = [r_average, g_average, b_average]
+    if modify_image:
+        for data in img_arr:
+            sample_img[data[3]][data[4]] = [r_average, g_average, b_average]
+    palette.append([r_average, g_average, b_average])
 
 
-def split_into_buckets(img, img_arr, depth):
+def split_into_buckets(img, img_arr, depth, modify_image=True):
     if len(img_arr) == 0:
         return
 
@@ -50,20 +52,21 @@ def split_into_buckets(img, img_arr, depth):
     median_index = int((len(img_arr) + 1) / 2)
 
     # split the array into two blocks
-    split_into_buckets(img, img_arr[0:median_index], depth - 1)
-    split_into_buckets(img, img_arr[median_index:], depth - 1)
+    split_into_buckets(img, img_arr[0:median_index], depth - 1, modify_image)
+    split_into_buckets(img, img_arr[median_index:], depth - 1, modify_image)
 
 
 INPUT_PATH = "./input"
 OUTPUT_PATH = "./output"
-input_image_path = os.path.join(INPUT_PATH, "foresttest.jpg")
-output_dest = os.path.join(OUTPUT_PATH, "testforest.png")
-output_shape = (128, 96)
+input_image_path = os.path.join(INPUT_PATH, "testforest.jpg")
+output_dest = os.path.join(OUTPUT_PATH, "testforest1.png")
+output_shape = (96, 64)
 pixelated_image = pixelate(input_image_path, output_shape)
 cv.imwrite(output_dest, pixelated_image)
 sample_img = imread(output_dest)
 output_path = output_dest
-colors = 7 # 2^colors is the number of colors
+colors = 4 # 2^colors is the number of colors
+palette = []
 
 flattened_img_array = []
 for rindex, rows in enumerate(sample_img):
@@ -74,6 +77,13 @@ flattened_img_array = np.array(flattened_img_array)
 
 # start the splitting process
 split_into_buckets(sample_img, flattened_img_array, colors)
+
+palette = np.copy(palette)
+palette = np.reshape(palette, (int(len(palette)/2), 2, 3))
+palette_output = os.path.join(OUTPUT_PATH, "palette1.png")
+cv.imwrite(palette_output, palette)
+cv.imshow("palette", palette)
+cv.waitKey(0)
 
 # save the final image
 imsave(output_path, sample_img)
